@@ -3,6 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Task } from './model/task.entity';
+import { TaskController } from './task/task.controller';
+import { TaskService } from './task/task.service';
+import { TaskModule } from './task/task.module';
 
 @Module({
   imports: [
@@ -17,6 +20,7 @@ import { Task } from './model/task.entity';
       database: 'postgres',
       entities: [Task],
     }),
+    TaskModule,
   ],
   controllers: [AppController],
   providers: [AppService],
