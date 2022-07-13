@@ -11,6 +11,7 @@ import { Task } from '../model/task.entity';
 import { Repository } from 'typeorm';
 import _ from 'lodash';
 import { CronJob } from 'cron';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class CronService {
@@ -19,7 +20,25 @@ export class CronService {
     private readonly schedulerRegistry: SchedulerRegistry,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectRepository(Task) private readonly repo: Repository<Task>,
+    private readonly httpService: HttpService,
   ) {}
+
+  private async sendTaskRequest(task: Task): Promise<void> {
+    console.log('You are at the point of request sending');
+
+    const method = task.method.toLowerCase();
+    const url = task.url;
+    const body = task.body;
+    const response = await this.httpService.axiosRef[method](url, body);
+
+    console.log(
+      'Request has been sent. Response is',
+      response.status,
+      response.data.toString().substring(0, 20),
+    );
+
+    return;
+  }
 
   // 1. Сначала проверяем, что она не находится в редисе по айдишнику
   // 2. Если находится, значит пропускаем выполнение
@@ -28,7 +47,20 @@ export class CronService {
   // 4. Выполняем джобу
   // 5. Снимаем блокировку с редиса
   private async executeCommonJob(task: Task): Promise<void> {
-    return;
+    const id = task.id.toString();
+    try {
+      const value = await this.cacheManager.get<string>(id);
+      if (value) {
+        return;
+      }
+
+      await this.cacheManager.set<string>(id, id, { ttl: 60 });
+      await this.sendTaskRequest(task);
+
+      await this.cacheManager.del(id);
+    } catch (ex) {
+      console.error('Execution of a job has been failed', ex);
+    }
   }
 
   private static getTaskListDiff(oldList: Task[], newList: Task[]): Task[] {
