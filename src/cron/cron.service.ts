@@ -22,6 +22,45 @@ export class CronService {
     private readonly helper: HelperService,
   ) {}
 
+  @Cron(PERIOD_OF_CRON_LIST_UPDATING, {
+    name: DB_EXTRACTION_JOB_NAME,
+  })
+  async refreshCronList() {
+    const tasksFromDB = await this.repo.find();
+
+    console.log('Tasks from DB', tasksFromDB.length);
+
+    const isDiff =
+      this.helper.getTaskListDiff(this.taskList, tasksFromDB).length > 0;
+
+    if (isDiff) {
+      this.taskList = tasksFromDB;
+      this.createCronJobs(this.taskList);
+    }
+  }
+
+  private createCronJobs(taskList: Task[]): void {
+    this.flushCronJobs();
+    taskList.forEach((task) => {
+      const job = new CronJob(task.cron, async () => {
+        await this.executeCommonJob(task);
+      });
+
+      this.schedulerRegistry.addCronJob(task.id.toString(), job);
+      job.start();
+    });
+  }
+
+  private flushCronJobs(): void {
+    const jobs = this.schedulerRegistry.getCronJobs();
+    jobs.forEach((value, key) => {
+      if (key == DB_EXTRACTION_JOB_NAME) {
+        return;
+      }
+      this.schedulerRegistry.deleteCronJob(key);
+    });
+  }
+
   private async executeCommonJob(task: Task): Promise<void> {
     const id = task.id.toString();
     try {
@@ -38,45 +77,6 @@ export class CronService {
       console.log(task.id, task.cron, 'executed');
     } catch (ex) {
       console.error(`Execution of a job has been failed. Id is ${task.id}`, ex);
-    }
-  }
-
-  private flushCronJobs(): void {
-    const jobs = this.schedulerRegistry.getCronJobs();
-    jobs.forEach((value, key) => {
-      if (key == DB_EXTRACTION_JOB_NAME) {
-        return;
-      }
-      this.schedulerRegistry.deleteCronJob(key);
-    });
-  }
-
-  private createCronJobs(taskList: Task[]): void {
-    this.flushCronJobs();
-    taskList.forEach((task) => {
-      const job = new CronJob(task.cron, async () => {
-        await this.executeCommonJob(task);
-      });
-
-      this.schedulerRegistry.addCronJob(task.id.toString(), job);
-      job.start();
-    });
-  }
-
-  @Cron(PERIOD_OF_CRON_LIST_UPDATING, {
-    name: DB_EXTRACTION_JOB_NAME,
-  })
-  async refreshCronList() {
-    const tasksFromDB = await this.repo.find();
-
-    console.log('Tasks from DB', tasksFromDB.length);
-
-    const isDiff =
-      this.helper.getTaskListDiff(this.taskList, tasksFromDB).length > 0;
-
-    if (isDiff) {
-      this.taskList = tasksFromDB;
-      this.createCronJobs(this.taskList);
     }
   }
 }
