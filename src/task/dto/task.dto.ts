@@ -4,6 +4,7 @@ import { IsEnum, IsString, IsUUID } from 'class-validator';
 import { IsCron } from '@kovalenko/is-cron';
 import { ITask, Methods } from '../interfaces/task.interface';
 
+// todo: swagger аннотации можно убрать нафиг
 export class TaskDTO implements Readonly<Task> {
   @ApiModelProperty({ required: true })
   @IsUUID()
@@ -26,6 +27,7 @@ export class TaskDTO implements Readonly<Task> {
   @IsString()
   body: string;
 
+  // todo: так, а эти методы мне действительно нужны пока ???
   public static from(dto: Partial<TaskDTO>) {
     const it = new TaskDTO();
     it.id = dto.id;
