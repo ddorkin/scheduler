@@ -18,7 +18,5 @@ import { HelperService } from './helper.service';
     HttpModule,
   ],
   providers: [CronService, HelperService],
-  controllers: [],
-  exports: [],
 })
 export class CronModule {}

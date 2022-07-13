@@ -6,7 +6,6 @@ import { Task } from './model/task.entity';
 import { TaskModule } from './task/task.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CronModule } from './cron/cron.module';
-import { HelperService } from './cron/helper.service';
 
 @Module({
   imports: [
