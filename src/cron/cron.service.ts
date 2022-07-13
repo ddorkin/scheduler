@@ -5,11 +5,9 @@ import {
   PERIOD_OF_CRON_LIST_UPDATING,
 } from '../constants';
 import { Cache } from 'cache-manager';
-import { randomUUID } from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from '../model/task.entity';
 import { Repository } from 'typeorm';
-import _ from 'lodash';
 import { CronJob } from 'cron';
 import { HttpService } from '@nestjs/axios';
 
@@ -23,6 +21,7 @@ export class CronService {
     private readonly httpService: HttpService,
   ) {}
 
+  // todo: вынести в utils
   private async sendTaskRequest(task: Task): Promise<void> {
     console.log('You are at the point of request sending');
 
@@ -40,12 +39,6 @@ export class CronService {
     return;
   }
 
-  // 1. Сначала проверяем, что она не находится в редисе по айдишнику
-  // 2. Если находится, значит пропускаем выполнение
-  // 3. Иначе выставляем значение в редисе (блокируем выполнение другими инстансами по айдишнику),
-  //    причём выставляем ttl на одну минуту (время ожидания запроса), если сервис отвалится, то что поделать
-  // 4. Выполняем джобу
-  // 5. Снимаем блокировку с редиса
   private async executeCommonJob(task: Task): Promise<void> {
     const id = task.id.toString();
     try {
@@ -63,6 +56,7 @@ export class CronService {
     }
   }
 
+  // todo: вынести в utils
   private static getTaskListDiff(oldList: Task[], newList: Task[]): Task[] {
     const isTaskIncluded = (arr, t) => {
       return arr.find((el) => el.id === t.id);
@@ -71,7 +65,6 @@ export class CronService {
     return oldList
       .filter((task) => !isTaskIncluded(newList, task))
       .concat(newList.filter((task) => !isTaskIncluded(oldList, task)));
-    // return _.xor<Task>(oldList, newList);
   }
 
   private flushCronJobs(): void {
@@ -85,8 +78,8 @@ export class CronService {
   }
 
   private createCronJobs(taskList: Task[]): void {
+    this.flushCronJobs();
     taskList.forEach((task) => {
-      // todo: вот интересно он async нормально скушает ???
       const job = new CronJob(task.cron, async () => {
         await this.executeCommonJob(task);
         console.log(task.id, task.cron, 'executed'.repeat(10));
@@ -101,15 +94,9 @@ export class CronService {
     name: DB_EXTRACTION_JOB_NAME,
   })
   async refreshCronList() {
-    // todo: for debug purposes
-    console.log('refresh'.repeat(10));
-
-    const key = randomUUID();
-    console.log('key'.repeat(10), key);
-    await this.cacheManager.set(key, key, { ttl: 3000 });
     const tasksFromDB = await this.repo.find();
 
-    console.log(tasksFromDB.length, tasksFromDB[0]);
+    console.log('Tasks from DB', tasksFromDB.length);
 
     const isDiff =
       CronService.getTaskListDiff(this.taskList, tasksFromDB).length > 0;
@@ -118,24 +105,5 @@ export class CronService {
       this.taskList = tasksFromDB;
       this.createCronJobs(this.taskList);
     }
-
-    /**
-     *
-     * todo:
-     * 1. получить список всех джоб из базы данных
-     * 2. проверить, если ли локально уже список этих джоб
-     * 3. если есть, то проверить дифф, если дифф есть, то обновить джобы (в дальнейшем можно обновить только сам дифф)
-     * 4. если списка нет, то создаем крон-джобы
-     *
-     * todo:
-     * далее, когда выполняется крона
-     * 1. Сначала проверяем, что она не находится в редисе по айдишнику
-     * 2. Если находится, значит пропускаем выполнение
-     * 3. Иначе выставляем значение в редисе (блокируем выполнение другими инстансами по айдишнику),
-     *    причём выставляем ttl на одну минуту (время ожидания запроса), если сервис отвалится, то что поделать
-     * 4. Выполняем джобу
-     * 5. Снимаем блокировку с редиса
-     *
-     */
   }
 }
