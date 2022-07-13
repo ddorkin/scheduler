@@ -22,11 +22,6 @@ import * as redisStore from 'cache-manager-redis-store';
       database: 'postgres',
       entities: [Task],
     }),
-    CacheModule.register({
-      store: redisStore,
-      host: 'localhost',
-      port: 6379,
-    }),
     TaskModule,
     CronModule,
     ScheduleModule.forRoot(),

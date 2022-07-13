@@ -3,8 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from '../model/task.entity';
 import { Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
-import { map } from 'rxjs';
-import { AxiosResponse } from 'axios';
 
 @Injectable()
 export class TaskService {
@@ -22,6 +20,6 @@ export class TaskService {
     const response = await this.httpService.axiosRef[method](url, body);
     console.log('debug '.repeat(10), response.status);
 
-    return await this.repo.find();
+    return this.repo.find();
   }
 }
