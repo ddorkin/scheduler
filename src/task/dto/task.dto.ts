@@ -1,9 +1,8 @@
 import { Task } from '../../model/task.entity';
-import { ApiModelProperty } from '@nestjs/swagger/dist/decorators/api-model-property.decorator';
 import { IsEnum, IsString } from 'class-validator';
 import { IsCron } from '@kovalenko/is-cron';
 import { ITask, Methods } from '../interfaces/task.interface';
-import { PrimaryGeneratedColumn } from 'typeorm';
+import { Column, PrimaryGeneratedColumn } from 'typeorm';
 import { InputOptions } from 'cron-validate/lib/types';
 
 const cronOptions: InputOptions = {
@@ -12,26 +11,21 @@ const cronOptions: InputOptions = {
   },
 };
 
-// todo: swagger аннотации можно убрать нафиг
 export class TaskDTO implements Readonly<Task> {
-  @ApiModelProperty({ required: true })
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ApiModelProperty({ required: true })
   @IsString()
   @IsCron(cronOptions, { each: true })
   cron: string;
 
-  @ApiModelProperty({ required: true })
   @IsString()
   url: string;
 
-  @ApiModelProperty({ required: true })
   @IsEnum(Methods)
   method: Methods;
 
-  @ApiModelProperty({ required: false })
+  @Column()
   body: string;
 
   // todo: так, а эти методы мне действительно нужны пока ???
