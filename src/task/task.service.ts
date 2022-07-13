@@ -2,7 +2,6 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from '../model/task.entity';
 import { Repository } from 'typeorm';
-import { ITask } from './interfaces/task.interface';
 import { TaskDTO } from './dto/task.dto';
 
 @Injectable()
@@ -25,20 +24,30 @@ export class TaskService {
   }
 
   async getTaskById(id: string): Promise<TaskDTO> {
-    return this.repo.findOneBy({ id }).then((task) => {
-      if (!task) {
-        // todo: походу нужно использовать фильтры для этого
-        throw new HttpException('NOT FOUND', HttpStatus.NOT_FOUND);
-      }
-      return TaskDTO.fromEntity(task);
-    });
+    const task = await this.repo.findOneBy({ id });
+    if (!task) {
+      // todo: походу нужно использовать фильтры для этого
+      throw new HttpException('NOT FOUND', HttpStatus.NOT_FOUND);
+    }
+    return TaskDTO.fromEntity(task);
   }
 
-  async updateTaskById(id: string, t: ITask): Promise<string> {
-    return '1234';
+  async updateTaskById(id: string, t: TaskDTO): Promise<string> {
+    const item = await this.repo.findOneBy({ id });
+    if (!item) {
+      throw new HttpException('NOT FOUND', HttpStatus.NOT_FOUND);
+    }
+    await this.repo.update(id, t);
+    // todo: на создание, изменение и удаление можно фаерить эвенты, чтобы вызывать обновления джоб, но это будет нифига не персистентно, потому что много инстансов
+    return id;
   }
 
   async deleteTaskById(id: string): Promise<string> {
-    return 'Ok';
+    const item = await this.repo.findOneBy({ id });
+    if (!item) {
+      throw new HttpException('NOT FOUND', HttpStatus.NOT_FOUND);
+    }
+    await this.repo.delete(id);
+    return id;
   }
 }

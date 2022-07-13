@@ -36,7 +36,7 @@ export class TaskController {
   @Put('/:id')
   async updateTaskById(
     @Param('id') id: string,
-    @Body() t: ITask,
+    @Body() t: TaskDTO,
   ): Promise<string> {
     return this.taskService.updateTaskById(id, t);
   }

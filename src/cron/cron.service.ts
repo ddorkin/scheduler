@@ -27,13 +27,19 @@ export class CronService {
     const url = task.url;
     const body = task.body;
     // todo: надо проверить body, JSON.stringify ???
-    const response = await this.httpService.axiosRef[method](url, body);
-
-    console.log(
-      'Request has been sent. Response is',
-      response.status,
-      response.data.toString().substring(0, 20),
-    );
+    try {
+      const response = await this.httpService.axiosRef[method](url, body);
+      console.log(
+        'Request has been sent. Response is',
+        response.status,
+        response.data.toString().substring(0, 20),
+      );
+    } catch (e) {
+      console.error(
+        `Error upon request sending for task id ${task.id}, url ${task.url} method ${task.method} body ${task.body}`,
+        JSON.stringify(e).substring(0, 200),
+      );
+    }
 
     return;
   }
