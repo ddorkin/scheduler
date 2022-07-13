@@ -6,6 +6,11 @@ import { Task } from './model/task.entity';
 import { TaskController } from './task/task.controller';
 import { TaskService } from './task/task.service';
 import { TaskModule } from './task/task.module';
+import { HttpModule } from '@nestjs/axios';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CronController } from './cron/cron.controller';
+import { CronService } from './cron/cron.service';
+import { CronModule } from './cron/cron.module';
 
 @Module({
   imports: [
@@ -21,6 +26,8 @@ import { TaskModule } from './task/task.module';
       entities: [Task],
     }),
     TaskModule,
+    CronModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,0 +1,1 @@
+insert into tasks (url, body, method, cron) values ('https://google.com','', 'GET', '*****');
