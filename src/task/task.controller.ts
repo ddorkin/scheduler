@@ -11,10 +11,7 @@ import { TaskService } from './task.service';
 import { ITask } from './interfaces/task.interface';
 import { TaskDTO } from './dto/task.dto';
 
-// todo: добавить путь
-// todo: добавить валидаторы
-// todo: нужно дописать остальные методы для работы с кронами (добавление, изменение, удаление)
-@Controller('task')
+@Controller('tasks')
 export class TaskController {
   constructor(private taskService: TaskService) {}
 
