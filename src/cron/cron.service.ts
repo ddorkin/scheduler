@@ -23,11 +23,10 @@ export class CronService {
 
   // todo: вынести в utils
   private async sendTaskRequest(task: Task): Promise<void> {
-    console.log('You are at the point of request sending');
-
     const method = task.method.toLowerCase();
     const url = task.url;
     const body = task.body;
+    // todo: надо проверить body, JSON.stringify ???
     const response = await this.httpService.axiosRef[method](url, body);
 
     console.log(

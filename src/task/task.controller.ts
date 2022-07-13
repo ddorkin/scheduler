@@ -8,7 +8,8 @@ import {
   Put,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
-import { task } from '../types';
+import { ITask } from './interfaces/task.interface';
+import { TaskDTO } from './dto/task.dto';
 
 // todo: добавить путь
 // todo: добавить валидаторы
@@ -18,24 +19,24 @@ export class TaskController {
   constructor(private taskService: TaskService) {}
 
   @Get()
-  async getAllTasks(): Promise<task[]> {
+  async getAllTasks(): Promise<TaskDTO[]> {
     return this.taskService.getAllTasks();
   }
 
   @Get('/:id')
-  async getTaskById(@Param('id') id: string): Promise<task> {
+  async getTaskById(@Param('id') id: string): Promise<ITask> {
     return this.taskService.getTaskById(id);
   }
 
   @Post()
-  async createTask(@Body() t: task): Promise<string> {
+  async createTask(@Body() t: ITask): Promise<string> {
     return this.taskService.createTask(t);
   }
 
   @Put('/:id')
   async updateTaskById(
     @Param('id') id: string,
-    @Body() t: task,
+    @Body() t: ITask,
   ): Promise<string> {
     return this.taskService.updateTaskById(id, t);
   }
