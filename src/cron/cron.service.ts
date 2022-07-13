@@ -56,8 +56,10 @@ export class CronService {
       await this.sendTaskRequest(task);
 
       await this.cacheManager.del(id);
+
+      console.log(task.id, task.cron, 'executed');
     } catch (ex) {
-      console.error('Execution of a job has been failed', ex);
+      console.error(`Execution of a job has been failed. Id is ${task.id}`, ex);
     }
   }
 
@@ -87,7 +89,6 @@ export class CronService {
     taskList.forEach((task) => {
       const job = new CronJob(task.cron, async () => {
         await this.executeCommonJob(task);
-        console.log(task.id, task.cron, 'executed');
       });
 
       this.schedulerRegistry.addCronJob(task.id.toString(), job);
