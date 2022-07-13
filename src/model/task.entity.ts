@@ -13,12 +13,12 @@ export class Task {
   })
   method: Methods;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', length: 2000 })
   url: string;
 
-  @Column({ type: 'varchar', default: null })
+  @Column({ type: 'varchar', length: 3000 })
   body: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', length: 50 })
   cron: string;
 }

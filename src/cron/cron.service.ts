@@ -13,7 +13,6 @@ import { HelperService } from './helper.service';
 
 @Injectable()
 export class CronService {
-  // todo: переделать под Set ???
   taskList = [];
   constructor(
     private readonly schedulerRegistry: SchedulerRegistry,

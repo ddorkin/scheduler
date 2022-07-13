@@ -11,9 +11,9 @@ export class TaskService {
   ) {}
 
   async createTask(dto: TaskDTO): Promise<string> {
-    const result = await this.repo
-      .save(dto.toEntity())
-      .then((t) => TaskDTO.fromEntity(t));
+    const task = await this.repo.save(dto.toEntity());
+    const result = TaskDTO.fromEntity(task);
+
     return result.id;
   }
 

@@ -1,8 +1,8 @@
 import { Task } from '../../model/task.entity';
-import { IsEnum, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { IsCron } from '@kovalenko/is-cron';
 import { ITask, Methods } from '../interfaces/task.interface';
-import { Column, PrimaryGeneratedColumn } from 'typeorm';
+import { PrimaryGeneratedColumn } from 'typeorm';
 import { InputOptions } from 'cron-validate/lib/types';
 
 const cronOptions: InputOptions = {
@@ -22,11 +22,12 @@ export class TaskDTO implements Readonly<Task> {
   @IsString()
   url: string;
 
+  @IsOptional()
+  @IsString()
+  body: string;
+
   @IsEnum(Methods)
   method: Methods;
-
-  @Column()
-  body: string;
 
   // todo: так, а эти методы мне действительно нужны пока ???
   public static from(dto: Partial<TaskDTO>) {
