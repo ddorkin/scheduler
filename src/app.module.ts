@@ -10,8 +10,6 @@ import { HelperService } from './cron/helper.service';
 
 @Module({
   imports: [
-    // todo: если что можно сделать config.service.ts
-    // todo: и можно поменять названия базы данных как здесь, так и в докер компоузе
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',

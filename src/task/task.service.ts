@@ -26,7 +26,6 @@ export class TaskService {
   async getTaskById(id: string): Promise<TaskDTO> {
     const task = await this.repo.findOneBy({ id });
     if (!task) {
-      // todo: походу нужно использовать фильтры для этого
       throw new HttpException('NOT FOUND', HttpStatus.NOT_FOUND);
     }
     return TaskDTO.fromEntity(task);
@@ -38,7 +37,7 @@ export class TaskService {
       throw new HttpException('NOT FOUND', HttpStatus.NOT_FOUND);
     }
     await this.repo.update(id, t);
-    // todo: на создание, изменение и удаление можно фаерить эвенты, чтобы вызывать обновления джоб, но это будет нифига не персистентно, потому что много инстансов
+
     return id;
   }
 
