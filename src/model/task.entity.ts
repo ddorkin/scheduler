@@ -3,8 +3,6 @@ import { Methods } from '../task/interfaces/task.interface';
 
 @Entity({ name: 'tasks' })
 export class Task {
-  // todo: а как насчёт поля method ???
-  // todo: видимо можно добавить какие-нибудь ещё поля
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

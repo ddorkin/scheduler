@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from '../model/task.entity';
 import { Repository } from 'typeorm';
@@ -11,9 +11,11 @@ export class TaskService {
     @InjectRepository(Task) private readonly repo: Repository<Task>,
   ) {}
 
-  async createTask({ cron, url, body }: ITask): Promise<string> {
-    // this.repo.save<Task>;
-    return '1234';
+  async createTask(dto: TaskDTO): Promise<string> {
+    const result = await this.repo
+      .save(dto.toEntity())
+      .then((t) => TaskDTO.fromEntity(t));
+    return result.id;
   }
 
   async getAllTasks(): Promise<TaskDTO[]> {
@@ -22,8 +24,14 @@ export class TaskService {
       .then((tasks) => tasks.map((e) => TaskDTO.fromEntity(e)));
   }
 
-  async getTaskById(id: string): Promise<ITask> {
-    return {} as ITask;
+  async getTaskById(id: string): Promise<TaskDTO> {
+    return this.repo.findOneBy({ id }).then((task) => {
+      if (!task) {
+        // todo: походу нужно использовать фильтры для этого
+        throw new HttpException('NOT FOUND', HttpStatus.NOT_FOUND);
+      }
+      return TaskDTO.fromEntity(task);
+    });
   }
 
   async updateTaskById(id: string, t: ITask): Promise<string> {
