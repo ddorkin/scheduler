@@ -82,7 +82,7 @@ export class CronService {
     taskList.forEach((task) => {
       const job = new CronJob(task.cron, async () => {
         await this.executeCommonJob(task);
-        console.log(task.id, task.cron, 'executed'.repeat(10));
+        console.log(task.id, task.cron, 'executed');
       });
 
       this.schedulerRegistry.addCronJob(task.id.toString(), job);
