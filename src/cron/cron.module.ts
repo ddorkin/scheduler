@@ -5,6 +5,7 @@ import { Task } from '../model/task.entity';
 import { HttpModule } from '@nestjs/axios';
 
 import * as redisStore from 'cache-manager-redis-store';
+import { HelperService } from './helper.service';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import * as redisStore from 'cache-manager-redis-store';
     }),
     HttpModule,
   ],
-  providers: [CronService],
+  providers: [CronService, HelperService],
   controllers: [],
   exports: [],
 })

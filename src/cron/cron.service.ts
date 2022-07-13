@@ -9,40 +9,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from '../model/task.entity';
 import { Repository } from 'typeorm';
 import { CronJob } from 'cron';
-import { HttpService } from '@nestjs/axios';
+import { HelperService } from './helper.service';
 
 @Injectable()
 export class CronService {
+  // todo: переделать под Set ???
   taskList = [];
   constructor(
     private readonly schedulerRegistry: SchedulerRegistry,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectRepository(Task) private readonly repo: Repository<Task>,
-    private readonly httpService: HttpService,
+    private readonly helper: HelperService,
   ) {}
-
-  // todo: вынести в utils
-  private async sendTaskRequest(task: Task): Promise<void> {
-    const method = task.method.toLowerCase();
-    const url = task.url;
-    const body = task.body;
-    // todo: надо проверить body, JSON.stringify ???
-    try {
-      const response = await this.httpService.axiosRef[method](url, body);
-      console.log(
-        'Request has been sent. Response is',
-        response.status,
-        response.data.toString().substring(0, 20),
-      );
-    } catch (e) {
-      console.error(
-        `Error upon request sending for task id ${task.id}, url ${task.url} method ${task.method} body ${task.body}`,
-        JSON.stringify(e).substring(0, 200),
-      );
-    }
-
-    return;
-  }
 
   private async executeCommonJob(task: Task): Promise<void> {
     const id = task.id.toString();
@@ -53,7 +31,7 @@ export class CronService {
       }
 
       await this.cacheManager.set<string>(id, id, { ttl: 60 });
-      await this.sendTaskRequest(task);
+      await this.helper.sendTaskRequest(task);
 
       await this.cacheManager.del(id);
 
@@ -61,17 +39,6 @@ export class CronService {
     } catch (ex) {
       console.error(`Execution of a job has been failed. Id is ${task.id}`, ex);
     }
-  }
-
-  // todo: вынести в utils
-  private static getTaskListDiff(oldList: Task[], newList: Task[]): Task[] {
-    const isTaskIncluded = (arr, t) => {
-      return arr.find((el) => el.id === t.id);
-    };
-
-    return oldList
-      .filter((task) => !isTaskIncluded(newList, task))
-      .concat(newList.filter((task) => !isTaskIncluded(oldList, task)));
   }
 
   private flushCronJobs(): void {
@@ -105,7 +72,7 @@ export class CronService {
     console.log('Tasks from DB', tasksFromDB.length);
 
     const isDiff =
-      CronService.getTaskListDiff(this.taskList, tasksFromDB).length > 0;
+      this.helper.getTaskListDiff(this.taskList, tasksFromDB).length > 0;
 
     if (isDiff) {
       this.taskList = tasksFromDB;
