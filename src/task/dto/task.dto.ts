@@ -29,7 +29,7 @@ export class TaskDTO implements Readonly<Task> {
   @IsEnum(Methods)
   method: Methods;
 
-  // todo: так, а эти методы мне действительно нужны пока ???
+  // todo: так, а эти методы мне действительно нужны ???
   public static from(dto: Partial<TaskDTO>) {
     const it = new TaskDTO();
     it.id = dto.id;
