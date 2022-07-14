@@ -9,8 +9,7 @@ export class HelperService {
   public async sendTaskRequest(task: Task): Promise<void> {
     const method = task.method.toLowerCase();
     const url = task.url;
-    const body = task.body;
-    // todo: надо проверить body, JSON.stringify ???
+    const body = task.body ? JSON.parse(task.body) : task.body;
     try {
       const response = await this.httpService.axiosRef[method](url, body);
       console.log(
